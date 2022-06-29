@@ -127,6 +127,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# Temporary project files
-!/kns_shop_listener/kns_shop_stat__computer.csv

@@ -1,6 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
+import time
+
 if __package__:
     from .. import common
 else:
@@ -17,7 +19,7 @@ except ImportError:
 
 from record import ComputerComponents, Record
 
-max_thread_amount = 4
+max_thread_amount = 1
 component_links = {
     ComputerComponents.Motherboard: 'https://www.kns.ru/product/materinskaya-plata-msi-meg-z690-unify-x/characteristics/',
     ComputerComponents.VideoCard: 'https://www.kns.ru/product/videokarta-palit-nvidia-geforce-rtx-3090-24gb-ned3090019sb-132ba/',
@@ -43,7 +45,8 @@ def log():
 
 def download_item_page(link: str):
     try:
-        result = requests.get(link)
+        with requests.Session() as session:
+            result = session.get(link)
         log().info(f"Result of downloading info by link '{link}' is {result.status_code}.")
         return result.content.decode(result.encoding)
     except Exception as exception:
@@ -62,6 +65,10 @@ def download_item_price(item_key: ComputerComponents):
         log().warning(f"HTML page was not downloaded for link '{link}'!")
         return 0
     log().debug(f"HTML page was successfully downloaded for link '{link}'.")
+
+    # Workaround throw connection refuse from web-site
+    if max_thread_amount <= 1:
+        time.sleep(10)
 
     try:
         parsed_html = BeautifulSoup(page, features='html.parser')
